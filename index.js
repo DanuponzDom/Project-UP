@@ -1,4 +1,9 @@
+const express = require('express');
+const cors = require('cors');
 const sequelize = require('./config/database');
+const roomRoute = require('./routes/roomRoute');
+const adminRoute = require('./routes/adminRoute');
+const userRoute = require('./routes/userRoute');
 
 async function testConnection() {
   try {
@@ -10,3 +15,20 @@ async function testConnection() {
 }
 
 testConnection();
+
+const app = express();
+
+// Middleware
+app.use(cors());
+app.use(express.json()); // แปลงข้อมูลเป็น JSON
+
+// Routes
+app.use('/rooms', roomRoute);
+app.use('/users', userRoute);
+app.use('/admins', adminRoute);
+
+//Start Server
+const PORT = process.env.PORT || 3000;
+app.listen(PORT, () => {
+  console.log(`Server is running on port ${PORT}`);
+});
