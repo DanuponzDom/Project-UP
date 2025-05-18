@@ -1,7 +1,6 @@
 const express = require('express');
 const cors = require('cors');
 const sequelize = require('./config/database');
-const roomRoute = require('./routes/roomRoute');
 const adminRoute = require('./routes/adminRoute');
 const userRoute = require('./routes/userRoute');
 
@@ -23,7 +22,6 @@ app.use(cors());
 app.use(express.json()); // แปลงข้อมูลเป็น JSON
 
 // Routes
-app.use('/rooms', roomRoute);
 app.use('/users', userRoute);
 app.use('/admins', adminRoute);
 
