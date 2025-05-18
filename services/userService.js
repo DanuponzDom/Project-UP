@@ -31,13 +31,13 @@ exports.registerUser = async ({ user_name, user_username, user_password, user_te
   return newUser;
 };
 
-exports.loginUser = async (username, password) => {
+exports.loginUser = async (user_username, user_password) => {
   // หาผู้ใช้ตาม username
-  const user = await User.findOne({ where: { uer_susername: username } });
+  const user = await User.findOne({ where: { user_username: user_username } });
   if (!user) throw new Error("ไม่พบผู้ใช้งาน");
 
   // ตรวจสอบรหัสผ่าน
-  const isMatch = await bcrypt.compare(password, user.password);
+  const isMatch = await bcrypt.compare(user_password, user.user_password);
   if (!isMatch) throw new Error("รหัสผ่านไม่ถูกต้อง");
 
   // สร้าง JWT token

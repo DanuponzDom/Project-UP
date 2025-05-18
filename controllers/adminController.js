@@ -20,12 +20,12 @@ exports.register = async (req, res) => {
 
 exports.login = async (req, res) => {
   try {
-    const { admin_username, admin_password } = req.body;
-    if (!admin_username || !admin_password) {
+    const { username, password } = req.body;
+    if (!username || !password) {
       return res.status(400).json({ message: "กรุณากรอกชื่อผู้ใช้และรหัสผ่าน" });
     }
 
-    const { token } = await adminService.loginAdmin(admin_username, admin_password);
+    const { token } = await adminService.loginAdmin(username, password);
 
     res.json({ message: "เข้าสู่ระบบสำเร็จ", token });
   } catch (error) {
