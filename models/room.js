@@ -10,7 +10,7 @@ const Room = sequelize.define('Room', {
   room_num: {
     type: DataTypes.STRING,
     allowNull: false,
-    unique: true,
+    unique: true,                                                                                                                                        
   },
   room_status: {
     type: DataTypes.CHAR(1),

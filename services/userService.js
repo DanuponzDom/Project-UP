@@ -49,3 +49,39 @@ exports.loginUser = async (user_username, user_password) => {
 
   return { token };
 };
+
+// READ ทั้งหมด
+exports.getAllUsers = async () => {
+  return await User.findAll({ attributes: { exclude: ['user_password'] } });
+};
+
+// READ รายคน
+exports.getUserById = async (id) => {
+  const user = await User.findByPk(id, {
+    attributes: { exclude: ['user_password'] }
+  });
+  if (!user) throw new Error("ไม่พบผู้ใช้นี้");
+  return user;
+};
+
+// UPDATE
+exports.updateUser = async (id, data) => {
+  const user = await User.findByPk(id);
+  if (!user) throw new Error("ไม่พบผู้ใช้นี้");
+
+  if (data.user_password) {
+    data.user_password = await bcrypt.hash(data.user_password, 10);
+  }
+
+  await user.update(data);
+  return user;
+};
+
+// DELETE
+exports.deleteUser = async (id) => {
+  const user = await User.findByPk(id);
+  if (!user) throw new Error("ไม่พบผู้ใช้นี้");
+
+  await user.destroy();
+  return { message: "ลบผู้ใช้งานเรียบร้อยแล้ว" };
+};
