@@ -46,3 +46,39 @@ exports.loginAdmin = async (admin_username, admin_password) => {
 
   return { token };
 };
+
+// GET ALL
+exports.getAllAdmins = async () => {
+  return await Admin.findAll({ attributes: { exclude: ['admin_password'] } });
+};
+
+// GET BY ID
+exports.getAdminById = async (id) => {
+  const admin = await Admin.findByPk(id, {
+    attributes: { exclude: ['admin_password'] }
+  });
+  if (!admin) throw new Error("ไม่พบผู้ดูแลระบบนี้");
+  return admin;
+};
+
+// UPDATE
+exports.updateAdmin = async (id, data) => {
+  const admin = await Admin.findByPk(id);
+  if (!admin) throw new Error("ไม่พบผู้ดูแลระบบนี้");
+
+  if (data.admin_password) {
+    data.admin_password = await bcrypt.hash(data.admin_password, 10);
+  }
+
+  await admin.update(data);
+  return admin;
+};
+
+// DELETE
+exports.deleteAdmin = async (id) => {
+  const admin = await Admin.findByPk(id);
+  if (!admin) throw new Error("ไม่พบผู้ดูแลระบบนี้");
+
+  await admin.destroy();
+  return { message: "ลบผู้ดูแลระบบเรียบร้อยแล้ว" };
+};
