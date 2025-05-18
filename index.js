@@ -3,6 +3,7 @@ const cors = require('cors');
 const sequelize = require('./config/database');
 const adminRoute = require('./routes/adminRoute');
 const userRoute = require('./routes/userRoute');
+const roomRoute = require('./routes/roomRoute');
 
 async function testConnection() {
   try {
@@ -24,6 +25,7 @@ app.use(express.json()); // แปลงข้อมูลเป็น JSON
 // Routes
 app.use('/users', userRoute);
 app.use('/admins', adminRoute);
+app.use('/rooms', roomRoute);
 
 //Start Server
 const PORT = process.env.PORT || 3000;
