@@ -6,6 +6,7 @@ const userRoute = require('./routes/userRoute');
 const roomRoute = require('./routes/roomRoute');
 const billTypeRoute = require('./routes/billTypeRoute');
 const stayRoute = require('./routes/stayRoute');
+const repairlistRoute = require('./routes/repairlistRoute');
 
 async function testConnection() {
   try {
@@ -30,6 +31,7 @@ app.use('/admins', adminRoute);
 app.use('/rooms', roomRoute);
 app.use('/billtype', billTypeRoute);
 app.use('/stays', stayRoute);
+app.use('/repairlists', repairlistRoute);
 
 //Start Server
 const PORT = process.env.PORT || 3000;
