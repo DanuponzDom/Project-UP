@@ -1,8 +1,21 @@
 const Sequelize = require('sequelize');
 const sequelize = require('../config/database');
+const Admin = require('./admin');
 const User = require('./user');
 const Room = require('./room');
 const Stay = require('./stay');
+const Repair = require('./repair');
+const Repairlist = require('./repairlist');
+
+// ความสัมพันธ์
+Admin.hasMany(Repair, { foreignKey: 'admin_id' });
+Repair.belongsTo(Admin, { foreignKey: 'admin_id' });
+
+Stay.hasMany(Repair, { foreignKey: 'stay_id' });
+Repair.belongsTo(Stay, { foreignKey: 'stay_id' });
+
+Repairlist.hasMany(Repair, { foreignKey: 'repairlist_id' });
+Repair.belongsTo(Repairlist, { foreignKey: 'repairlist_id' });
 
 // กำหนดความสัมพันธ์ระหว่างโมเดล
 User.hasMany(Stay, { foreignKey: 'user_id' });
@@ -18,4 +31,7 @@ module.exports = {
   User,
   Room,
   Stay,
+  Admin,
+  Repairlist,
+  Repair,
 };
