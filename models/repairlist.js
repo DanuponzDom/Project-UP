@@ -3,7 +3,7 @@ const sequelize = require('../config/database');
 
 const Repairlist = sequelize.define('Repairlist', {
   repairlist_id: {
-    type: DataTypes.INTEGER,
+    type: DataTypes.INTEGER, //master data
     autoIncrement: true,
     primaryKey: true
   },

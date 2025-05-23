@@ -3,8 +3,8 @@ const sequelize = require('../config/database');
 
 const Admin = sequelize.define('Admin', {
   admin_id: {
-    type: DataTypes.INTEGER,
-    autoIncrement: true,
+    type: DataTypes.UUID,
+    defaultValue: DataTypes.UUIDV4,
     primaryKey: true,
   },
   admin_name: {
@@ -25,8 +25,7 @@ const Admin = sequelize.define('Admin', {
     allowNull: false,
     defaultValue: "admin",
   }
-},
-{
+}, {
   tableName: 'admins',
   timestamps: false,
 });

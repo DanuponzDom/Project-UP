@@ -3,14 +3,14 @@ const sequelize = require('../config/database');
 
 const Room = sequelize.define('Room', {
   room_id: {
-    type: DataTypes.INTEGER,
-    autoIncrement: true,
+    type: DataTypes.UUID,
+    defaultValue: DataTypes.UUIDV4,
     primaryKey: true,
   },
   room_num: {
     type: DataTypes.STRING,
     allowNull: false,
-    unique: true,                                                                                                                                        
+    unique: true,
   },
   room_status: {
     type: DataTypes.CHAR(1),

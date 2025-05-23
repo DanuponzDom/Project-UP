@@ -3,20 +3,20 @@ const sequelize = require('../config/database');
 
 const Repair = sequelize.define('Repair', {
   repair_id: {
-    type: DataTypes.INTEGER,
-    autoIncrement: true,
+    type: DataTypes.UUID,
+    defaultValue: DataTypes.UUIDV4,
     primaryKey: true,
   },
   admin_id: {
-    type: DataTypes.INTEGER,
+    type: DataTypes.UUID,
     allowNull: false,
   },
   stay_id: {
-    type: DataTypes.INTEGER,
+    type: DataTypes.UUID,
     allowNull: false,
   },
   repairlist_id: {
-    type: DataTypes.INTEGER,
+    type: DataTypes.INTEGER, // master data
     allowNull: false,
   },
   repair_date: {

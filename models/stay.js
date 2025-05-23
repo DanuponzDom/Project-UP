@@ -3,16 +3,16 @@ const sequelize = require('../config/database');
 
 const Stay = sequelize.define('Stay', {
   stay_id: {
-    type: DataTypes.INTEGER,
-    autoIncrement: true,
+    type: DataTypes.UUID,
+    defaultValue: DataTypes.UUIDV4,
     primaryKey: true,
   },
   user_id: {
-    type: DataTypes.INTEGER,
+    type: DataTypes.UUID,
     allowNull: false,
   },
   room_id: {
-    type: DataTypes.INTEGER,
+    type: DataTypes.UUID,
     allowNull: false,
   },
   stay_date: {
@@ -22,7 +22,7 @@ const Stay = sequelize.define('Stay', {
   stay_status: {
     type: DataTypes.STRING,
     allowNull: false,
-    defaultValue: 'stay', // ตัวอย่าง: stay, checkout
+    defaultValue: 'stay',
   },
   stay_dateout: {
     type: DataTypes.DATEONLY,

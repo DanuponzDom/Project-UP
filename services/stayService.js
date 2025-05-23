@@ -11,7 +11,7 @@ exports.getAllStays = async () => {
     stay_date: stay.stay_date,
     stay_status: stay.stay_status,
     stay_dateout: stay.stay_dateout,
-    user_username: stay.User.user_username,
+    user_name: stay.User.user_name,
     room_num: stay.Room.room_num
   }));
 };
@@ -27,7 +27,7 @@ exports.getStayById = async (id) => {
     stay_date: stay.stay_date,
     stay_status: stay.stay_status,
     stay_dateout: stay.stay_dateout,
-    user_username: stay.User.user_username,
+    user_name: stay.User.user_name,
     room_num: stay.Room.room_num
   };
 };
@@ -42,7 +42,7 @@ exports.createStay = async (stayData) => {
     stay_date: created.stay_date,
     stay_status: created.stay_status,
     stay_dateout: created.stay_dateout,
-    user_username: user?.user_username || null,
+    user_name: user?.user_name || null,
     room_num: room?.room_num || null
   };
 };
@@ -60,7 +60,7 @@ exports.updateStay = async (id, updateData) => {
     stay_date: stay.stay_date,
     stay_status: stay.stay_status,
     stay_dateout: stay.stay_dateout,
-    user_username: user?.user_username || null,
+    user_name: user?.user_name || null,
     room_num: room?.room_num || null
   };
 };
