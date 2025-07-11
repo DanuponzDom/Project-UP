@@ -6,6 +6,7 @@ const Room = require('./room');
 const Stay = require('./stay');
 const Repair = require('./repair');
 const Repairlist = require('./repairlist');
+const Expense = require('./expense');
 
 // ความสัมพันธ์
 Admin.hasMany(Repair, { foreignKey: 'admin_id' });
@@ -24,6 +25,10 @@ Stay.belongsTo(User, { foreignKey: 'user_id' });
 Room.hasMany(Stay, { foreignKey: 'room_id' });
 Stay.belongsTo(Room, { foreignKey: 'room_id' });
 
+// ความสัมพันธ์: Expense -> Admin
+Admin.hasMany(Expense, { foreignKey: 'admin_id' });
+Expense.belongsTo(Admin, { foreignKey: 'admin_id' });
+
 // ส่งออก
 module.exports = {
   sequelize,
@@ -34,4 +39,5 @@ module.exports = {
   Admin,
   Repairlist,
   Repair,
+  Expense,
 };

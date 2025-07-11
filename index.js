@@ -8,6 +8,7 @@ const billTypeRoute = require('./routes/billTypeRoute');
 const stayRoute = require('./routes/stayRoute');
 const repairlistRoute = require('./routes/repairlistRoute');
 const repairRoute = require('./routes/repairRoute');
+const expenseRoute = require('./routes/expenseRoute');
 
 async function testConnection() {
   try {
@@ -34,6 +35,7 @@ app.use('/billtype', billTypeRoute);
 app.use('/stays', stayRoute);
 app.use('/repairlists', repairlistRoute);
 app.use('/repairs', repairRoute);
+app.use('/expenses', expenseRoute);
 
 //Start Server
 const PORT = process.env.PORT || 5000;
