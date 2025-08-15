@@ -1,4 +1,4 @@
-const { Payment, Stay, Room, Admin, BillType, User, Sequelize } = require('../models'); // เพิ่ม Sequelize เข้ามา
+const { Payment, Stay, Room, Admin, BillType, User, Sequelize } = require('../models');
 
 // Helper function สำหรับจัดการ error
 const handleError = (message, statusCode = 500) => {
@@ -8,7 +8,7 @@ const handleError = (message, statusCode = 500) => {
 };
 
 // สร้างการชำระเงินใหม่
-exports.createPayment = async ({ admin_id, stay_id, water_amount, ele_amount, payment_date }) => {
+exports.createPayment = async ({ admin_id, stay_id, water_amount = 0, ele_amount = 0, payment_insurance = 0, payment_date }) => {
   try {
     const stay = await Stay.findByPk(stay_id, { include: Room });
     if (!stay) {
@@ -19,17 +19,21 @@ exports.createPayment = async ({ admin_id, stay_id, water_amount, ele_amount, pa
     }
     const roomPrice = parseFloat(stay.Room.room_price);
 
-    const waterBill = await BillType.findByPk(1); // น้ำ
-    const eleBill = await BillType.findByPk(2);   // ไฟ
+    const waterBill = await BillType.findByPk(1);
+    const eleBill = await BillType.findByPk(2);
+    const insuranceBill = await BillType.findByPk(4);
 
-    if (!waterBill || !eleBill) {
-      handleError("ไม่พบข้อมูลประเภทบิล (น้ำ/ไฟ)", 404);
+    if (!waterBill || !eleBill || !insuranceBill) {
+      handleError("ไม่พบข้อมูลประเภทบิล (น้ำ/ไฟ/ประกัน)", 404);
     }
 
+    // ค่าที่นำมาคูณจะใช้ค่าที่รับเข้ามา หรือ 0 ถ้าไม่ได้ระบุ
     const water_price = water_amount * parseFloat(waterBill.billtype_price);
     const ele_price = ele_amount * parseFloat(eleBill.billtype_price);
+    const insurance_price = payment_insurance * parseFloat(insuranceBill.billtype_price);
 
-    const payment_total = water_price + ele_price + roomPrice;
+    // คำนวณยอดรวมทั้งหมด: น้ำ + ไฟ + ประกัน + ค่าห้อง
+    const payment_total = water_price + ele_price + insurance_price + roomPrice;
 
     const newPayment = await Payment.create({
       admin_id,
@@ -38,6 +42,8 @@ exports.createPayment = async ({ admin_id, stay_id, water_amount, ele_amount, pa
       water_price,
       ele_amount,
       ele_price,
+      payment_insurance,
+      insurance_price,
       payment_total,
       payment_date,
       payment_status: '0',
@@ -55,16 +61,15 @@ exports.getAllPayments = async () => {
     return await Payment.findAll({
       attributes: [
         'payment_id',
-        // ดึง admin_name จาก Admin model และเปลี่ยนชื่อ key เป็น 'admin_name'
         [Sequelize.col('Admin.admin_name'), 'admin_name'],
-        // ดึง user_name จาก User model (ผ่าน Stay) และเปลี่ยนชื่อ key เป็น 'user_name'
         [Sequelize.col('Stay.User.user_name'), 'user_name'],
-        // ดึง room_num จาก Room model (ผ่าน Stay) และเพิ่มเป็น key 'room_num'
         [Sequelize.col('Stay.Room.room_num'), 'room_num'],
         'water_amount',
         'water_price',
         'ele_amount',
         'ele_price',
+        'payment_insurance',
+        'insurance_price',
         'payment_total',
         'payment_date',
         'payment_status'
@@ -72,21 +77,21 @@ exports.getAllPayments = async () => {
       include: [
         {
           model: Stay,
-          attributes: [], // ไม่ต้องการดึง attributes ของ Stay โดยตรง
+          attributes: [],
           include: [
             {
               model: Room,
-              attributes: [] // ไม่ต้องการดึง attributes ของ Room โดยตรง
+              attributes: []
             },
             {
               model: User,
-              attributes: [] // ไม่ต้องการดึง attributes ของ User โดยตรง
+              attributes: []
             }
           ]
         },
         {
           model: Admin,
-          attributes: [] // ไม่ต้องการดึง attributes ของ Admin โดยตรง
+          attributes: []
         }
       ]
     });
@@ -109,6 +114,8 @@ exports.getPaymentById = async (id) => {
         'water_price',
         'ele_amount',
         'ele_price',
+        'payment_insurance',
+        'insurance_price',
         'payment_total',
         'payment_date',
         'payment_status'
@@ -152,16 +159,27 @@ exports.updatePayment = async (id, data) => {
       handleError("ไม่พบข้อมูลการชำระ", 404);
     }
 
-    if (data.water_amount !== undefined || data.ele_amount !== undefined) {
+    // ตรวจสอบว่ามีการเปลี่ยนแปลงค่าใดๆ ที่ส่งผลต่อการคำนวณยอดรวมหรือไม่
+    // หรือถ้ามีการส่งค่ามา (แม้จะเป็น 0) ก็ให้คำนวณใหม่
+    if (data.water_amount !== undefined || data.ele_amount !== undefined || data.payment_insurance !== undefined) {
       const waterBill = await BillType.findByPk(1);
       const eleBill = await BillType.findByPk(2);
+      const insuranceBill = await BillType.findByPk(4);
 
-      if (!waterBill || !eleBill) {
-        handleError("ไม่พบข้อมูลประเภทบิล (น้ำ/ไฟ) สำหรับการคำนวณใหม่", 404);
+      if (!waterBill || !eleBill || !insuranceBill) {
+        handleError("ไม่พบข้อมูลประเภทบิล (น้ำ/ไฟ/ประกัน) สำหรับการคำนวณใหม่", 404);
       }
 
-      const water_price = (data.water_amount ?? payment.water_amount) * parseFloat(waterBill.billtype_price);
-      const ele_price = (data.ele_amount ?? payment.ele_amount) * parseFloat(eleBill.billtype_price);
+      // ใช้ค่าใหม่ที่ส่งมา (data.xxx) หรือใช้ค่าเดิมที่มีอยู่ใน payment ถ้าไม่ได้ส่งมา
+      // หรือถ้าส่ง null/undefined มา ก็จะใช้ค่าเดิมจาก DB หรือ 0 (ถ้าค่าเดิมใน DB เป็น 0)
+      const current_water_amount = data.water_amount ?? payment.water_amount;
+      const current_ele_amount = data.ele_amount ?? payment.ele_amount;
+      const current_payment_insurance = data.payment_insurance ?? payment.payment_insurance;
+
+
+      const water_price = current_water_amount * parseFloat(waterBill.billtype_price);
+      const ele_price = current_ele_amount * parseFloat(eleBill.billtype_price);
+      const insurance_price = current_payment_insurance * parseFloat(insuranceBill.billtype_price);
 
       const stay = await Stay.findByPk(payment.stay_id, { include: Room });
       if (!stay || !stay.Room) {
@@ -169,9 +187,13 @@ exports.updatePayment = async (id, data) => {
       }
       const roomPrice = parseFloat(stay.Room.room_price);
 
+      // อัปเดตค่าราคาที่คำนวณแล้วใน data
       data.water_price = water_price;
       data.ele_price = ele_price;
-      data.payment_total = water_price + ele_price + roomPrice;
+      data.insurance_price = insurance_price;
+
+      // คำนวณ payment_total ใหม่
+      data.payment_total = water_price + ele_price + insurance_price + roomPrice;
     }
 
     await payment.update(data);
@@ -182,7 +204,7 @@ exports.updatePayment = async (id, data) => {
   }
 };
 
-// ลบข้อมูลการชำระเงิน
+// ลบข้อมูลการชำระเงิน (เหมือนเดิม)
 exports.deletePayment = async (id) => {
   try {
     const payment = await Payment.findByPk(id);

@@ -35,6 +35,11 @@ const Payment = sequelize.define('Payment', {
     allowNull: true,
     defaultValue: 0,
   },
+  payment_insurance: {
+    type: DataTypes.DECIMAL(12, 2),
+    allowNull: true,
+    defaultValue: 0,
+  },
   payment_total: {
     type: DataTypes.DECIMAL(12, 2),
     allowNull: true,
