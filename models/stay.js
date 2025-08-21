@@ -20,9 +20,12 @@ const Stay = sequelize.define('Stay', {
     allowNull: false,
   },
   stay_status: {
-    type: DataTypes.STRING,
+    type: DataTypes.INTEGER,
     allowNull: false,
-    defaultValue: 'stay',
+    defaultValue: 0, // 0 = เข้าพัก, 1 = แจ้งย้ายออกแล้ว, 2 = ย้ายออกแล้ว
+    validate: {
+      isIn: [[0, 1, 2]],
+    },
   },
   stay_dateout: {
     type: DataTypes.DATEONLY,
