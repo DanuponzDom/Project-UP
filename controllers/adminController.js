@@ -2,12 +2,12 @@ const adminService = require("../services/adminService");
 
 exports.register = async (req, res) => {
   try {
-    const { admin_name, admin_username, admin_password } = req.body;
+    const { admin_name, admin_username, admin_password, admin_tel } = req.body;
     if (!admin_name || !admin_username || !admin_password) {
       return res.status(400).json({ message: "กรุณากรอกข้อมูลให้ครบถ้วน" });
     }
 
-    const newAdmin = await adminService.registerAdmin(req.body);
+    const newAdmin = await adminService.registerAdmin({ admin_name, admin_username, admin_password, admin_tel });
 
     res.status(201).json({
       message: "สมัครสมาชิกผู้ดูแลระบบสำเร็จ",

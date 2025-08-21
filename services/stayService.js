@@ -1,5 +1,6 @@
-const { Stay, User, Room } = require('../models');
+const { Stay, User, Room, Repair, Payment } = require('../models');
 
+// GET ALL STAYS
 exports.getAllStays = async () => {
   const stays = await Stay.findAll({
     include: [User, Room],
@@ -16,10 +17,9 @@ exports.getAllStays = async () => {
   }));
 };
 
+// GET STAY BY ID
 exports.getStayById = async (id) => {
-  const stay = await Stay.findByPk(id, {
-    include: [User, Room],
-  });
+  const stay = await Stay.findByPk(id, { include: [User, Room] });
   if (!stay) return null;
 
   return {
@@ -32,8 +32,17 @@ exports.getStayById = async (id) => {
   };
 };
 
+// CREATE STAY
 exports.createStay = async (stayData) => {
+  // สร้าง Stay ใหม่
   const created = await Stay.create(stayData);
+
+  // อัปเดตสถานะห้องเป็นไม่ว่าง
+  await Room.update(
+    { room_status: '1' }, // 1 = ไม่ว่าง
+    { where: { room_id: stayData.room_id } }
+  );
+
   const user = await User.findByPk(stayData.user_id);
   const room = await Room.findByPk(stayData.room_id);
 
@@ -47,11 +56,42 @@ exports.createStay = async (stayData) => {
   };
 };
 
+// UPDATE STAY
 exports.updateStay = async (id, updateData) => {
   const stay = await Stay.findByPk(id);
   if (!stay) return null;
 
+  // ถ้าเปลี่ยนสถานะเป็น 2 (ย้ายออกแล้ว) → ปล่อยห้องว่าง
+  if (updateData.stay_status === 2) {
+    await Room.update(
+      { room_status: '0' }, // 0 = ว่าง
+      { where: { room_id: stay.room_id } }
+    );
+    if (!updateData.stay_dateout) {
+      updateData.stay_dateout = new Date();
+    }
+  }
+
   await stay.update(updateData);
+
+  // ถ้าเปลี่ยนห้องใหม่ หรือ stay_status = 0 (เข้าพัก) → ห้องใหม่ไม่ว่าง
+  if (updateData.room_id && updateData.room_id !== stay.room_id) {
+    await Room.update(
+      { room_status: '1' },
+      { where: { room_id: updateData.room_id } }
+    );
+    // ห้องเดิมที่ถูกย้ายออก → ว่าง
+    await Room.update(
+      { room_status: '0' },
+      { where: { room_id: stay.room_id } }
+    );
+  } else if (updateData.stay_status === 0) {
+    await Room.update(
+      { room_status: '1' },
+      { where: { room_id: stay.room_id } }
+    );
+  }
+
   const user = await User.findByPk(updateData.user_id || stay.user_id);
   const room = await Room.findByPk(updateData.room_id || stay.room_id);
 
@@ -65,9 +105,25 @@ exports.updateStay = async (id, updateData) => {
   };
 };
 
+// DELETE Stay
 exports.deleteStay = async (id) => {
   const stay = await Stay.findByPk(id);
   if (!stay) return null;
+
+  // ตรวจสอบว่ามีการใช้งานใน Repair หรือ Payment หรือไม่
+  const usedInRepair = await Repair.count({ where: { stay_id: id } });
+  const usedInPayment = await Payment.count({ where: { stay_id: id } });
+
+  if (usedInRepair > 0 || usedInPayment > 0) {
+    throw new Error("ไม่สามารถลบ Stay ได้ เนื่องจากถูกใช้งานใน Repair หรือ Payment");
+  }
+
+  // ปล่อยห้องว่างก่อนลบ
+  await Room.update(
+    { room_status: '0' },
+    { where: { room_id: stay.room_id } }
+  );
+
   await stay.destroy();
   return stay;
 };

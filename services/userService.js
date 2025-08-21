@@ -1,6 +1,6 @@
 const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
-const User = require("../models/user");
+const { User, Stay } = require("../models");
 require("dotenv").config();
 
 exports.registerUser = async ({ user_name, user_username, user_password, user_tel, user_address, user_age }) => {
@@ -81,6 +81,12 @@ exports.updateUser = async (id, data) => {
 exports.deleteUser = async (id) => {
   const user = await User.findByPk(id);
   if (!user) throw new Error("ไม่พบผู้ใช้นี้");
+
+  // เช็กว่า user_id ถูกใช้งานใน Stay หรือไม่
+  const stayExists = await Stay.findOne({ where: { user_id: id } });
+  if (stayExists) {
+    throw new Error("ไม่สามารถลบผู้ใช้นี้ได้ เนื่องจากยังมีการใช้งานอยู่ในตาราง Stay");
+  }
 
   await user.destroy();
   return { message: "ลบผู้ใช้งานเรียบร้อยแล้ว" };

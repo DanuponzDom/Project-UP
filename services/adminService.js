@@ -3,13 +3,13 @@ const jwt = require("jsonwebtoken");
 const Admin = require("../models/admin");
 require("dotenv").config();
 
-exports.registerAdmin = async ({ admin_name, admin_username, admin_password }) => {
+exports.registerAdmin = async ({ admin_name, admin_username, admin_password, admin_tel }) => {
   if (!admin_name || !admin_username || !admin_password) {
     throw new Error("ข้อมูลไม่ครบ");
   }
 
   // เช็ค username ว่าซ้ำหรือยัง
-  const existingAdmin = await Admin.findOne({ where: { admin_username: admin_username } });
+  const existingAdmin = await Admin.findOne({ where: { admin_username } });
   if (existingAdmin) {
     throw new Error("Username นี้ถูกใช้แล้ว");
   }
@@ -19,25 +19,23 @@ exports.registerAdmin = async ({ admin_name, admin_username, admin_password }) =
 
   // สร้าง admin ใหม่
   const newAdmin = await Admin.create({
-    admin_name: admin_name,
-    admin_username: admin_username,
+    admin_name,
+    admin_username,
     admin_password: hashedPassword,
-    role: "admin",  // กำหนด role ตรงนี้เลย
+    admin_tel,
+    role: "admin",
   });
 
   return newAdmin;
 };
 
 exports.loginAdmin = async (admin_username, admin_password) => {
-  // หาผู้ใช้ตาม username
-  const admin = await Admin.findOne({ where: { admin_username: admin_username } });
+  const admin = await Admin.findOne({ where: { admin_username } });
   if (!admin) throw new Error("ไม่พบผู้ใช้งาน");
 
-  // ตรวจสอบรหัสผ่าน
   const isMatch = await bcrypt.compare(admin_password, admin.admin_password);
   if (!isMatch) throw new Error("รหัสผ่านไม่ถูกต้อง");
 
-  // สร้าง JWT token
   const token = jwt.sign(
     { id: admin.admin_id, username: admin.admin_username, role: admin.role },
     process.env.JWT_SECRET,
@@ -47,21 +45,16 @@ exports.loginAdmin = async (admin_username, admin_password) => {
   return { token };
 };
 
-// GET ALL
 exports.getAllAdmins = async () => {
   return await Admin.findAll({ attributes: { exclude: ['admin_password'] } });
 };
 
-// GET BY ID
 exports.getAdminById = async (id) => {
-  const admin = await Admin.findByPk(id, {
-    attributes: { exclude: ['admin_password'] }
-  });
+  const admin = await Admin.findByPk(id, { attributes: { exclude: ['admin_password'] } });
   if (!admin) throw new Error("ไม่พบผู้ดูแลระบบนี้");
   return admin;
 };
 
-// UPDATE
 exports.updateAdmin = async (id, data) => {
   const admin = await Admin.findByPk(id);
   if (!admin) throw new Error("ไม่พบผู้ดูแลระบบนี้");
@@ -74,7 +67,6 @@ exports.updateAdmin = async (id, data) => {
   return admin;
 };
 
-// DELETE
 exports.deleteAdmin = async (id) => {
   const admin = await Admin.findByPk(id);
   if (!admin) throw new Error("ไม่พบผู้ดูแลระบบนี้");
