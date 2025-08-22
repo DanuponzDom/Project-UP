@@ -2,16 +2,23 @@ const express = require('express');
 const router = express.Router();
 const notificationRepairController = require('../controllers/notificationRepairController');
 
-// ดึง notification ทั้งหมด
+// ดึง Notification ทั้งหมด
 router.get('/getall', notificationRepairController.getAll);
 
-// ดึง notification ของ user
-router.get('/user/:user_id', notificationRepairController.getByUser);
+// ดึง Notification ของ user หรือ admin
+// ตัวอย่าง: /notifications/user?user_id=xxx หรือ /notifications/admin?admin_id=xxx
+router.get('/user-or-admin', notificationRepairController.getByUserOrAdmin);
 
-// ดึง notification ของ admin
-router.get('/admin/:admin_id', notificationRepairController.getByAdmin);
+// ดึง Notification ตาม ID
+router.get('/:id', notificationRepairController.getById);
+
+// สร้าง Notification ใหม่
+router.post('/create', notificationRepairController.create);
 
 // ทำเครื่องหมายว่าอ่านแล้ว
-router.put('/markread/:notification_id', notificationRepairController.markRead);
+router.patch('/:id/read', notificationRepairController.markAsRead);
+
+// ลบ Notification
+router.delete('/:id', notificationRepairController.delete);
 
 module.exports = router;

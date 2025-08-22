@@ -1,20 +1,12 @@
-const { STRING } = require('sequelize');
-const { Repair, Admin, Stay, Room, Repairlist, User } = require('../models');
-const notificationRepairService = require('./notificationRepairService');
+const { Repair, Admin, Stay, Room, Repairlist } = require('../models');
+const { createNotification } = require('./notificationRepairService');
 
 // ดึงข้อมูลทั้งหมด
 exports.getAllRepairs = async () => {
   const repairs = await Repair.findAll({
     include: [
       { model: Admin, attributes: ['admin_name'] },
-      { 
-        model: Stay, 
-        attributes: ['stay_id'],
-        include: [
-          { model: Room, attributes: ['room_num'] },
-          { model: User, attributes: ['user_name'] }
-        ]
-      },
+      { model: Stay, attributes: ['stay_id'], include: [{ model: Room, attributes: ['room_num'] }] },
       { model: Repairlist, attributes: ['repairlist_details', 'repairlist_price'] },
     ],
   });
@@ -25,27 +17,19 @@ exports.getAllRepairs = async () => {
     repair_status: r.repair_status,
     room_num: r.Stay?.Room?.room_num || null,
     admin_name: r.Admin?.admin_name || null,
-    user_name: r.Stay?.User?.user_name || null,
     repairlist: {
       repairlist_details: r.Repairlist?.repairlist_details || null,
       repairlist_price: r.Repairlist?.repairlist_price || null,
-    }
+    },
   }));
 };
 
-// ดึง Repair ตาม ID
+// ดึงข้อมูลตาม ID
 exports.getRepairById = async (id) => {
   const r = await Repair.findByPk(id, {
     include: [
       { model: Admin, attributes: ['admin_name'] },
-      { 
-        model: Stay, 
-        attributes: ['stay_id'],
-        include: [
-          { model: Room, attributes: ['room_num'] },
-          { model: User, attributes: ['user_name'] }
-        ]
-      },
+      { model: Stay, attributes: ['stay_id'], include: [{ model: Room, attributes: ['room_num'] }] },
       { model: Repairlist, attributes: ['repairlist_details', 'repairlist_price'] },
     ],
   });
@@ -58,55 +42,78 @@ exports.getRepairById = async (id) => {
     repair_status: r.repair_status,
     room_num: r.Stay?.Room?.room_num || null,
     admin_name: r.Admin?.admin_name || null,
-    user_name: r.Stay?.User?.user_name || null,
     repairlist: {
       repairlist_details: r.Repairlist?.repairlist_details || null,
       repairlist_price: r.Repairlist?.repairlist_price || null,
-    }
+    },
   };
 };
 
-// สร้าง Repair + แจ้ง Notification
+// เพิ่มข้อมูล
 exports.createRepair = async (data) => {
-  console.log("data",data);
   const repair = await Repair.create(data);
-  const fullRepair = await exports.getRepairById(repair.repair_id);
-  // ส่ง Notification ไป admin ทุกคน
-  const admins = await Admin.findAll();
-  for (const admin of admins) {
-    await notificationRepairService.createNotification({
-      admin_id: admin.admin_id,
-      title: 'แจ้งซ่อมใหม่',
-      message: `ผู้ใช้ ${fullRepair.user_name || 'admin'} แจ้งซ่อมห้อง ${fullRepair.room_num}`
-    });
-  }
 
-  return fullRepair;
+  // ดึงข้อมูล stay + room
+  const stay = await Stay.findByPk(repair.stay_id, { include: Room });
+  const roomNum = stay?.Room?.room_num || 'ไม่ระบุห้อง';
+
+  // สร้าง Notification ไปให้ admin
+  await NotificationRepair.create({
+    user_id: null,
+    admin_id: repair.admin_id, // ส่งไปยัง admin
+    title: 'มีรายการซ่อมใหม่',
+    message: `มีรายการซ่อมใหม่สำหรับห้อง ${roomNum}`,
+    read_status: false
+  });
+
+  // ส่งกลับข้อมูล repair
+  return await exports.getRepairById(repair.repair_id);
 };
 
-// อัปเดต Repair + แจ้ง Notification user
-exports.updateRepair = async (id, data) => {
+// แก้ไขข้อมูล
+exports.updateRepair = async (id, updateData) => {
   const repair = await Repair.findByPk(id);
   if (!repair) return null;
 
-  await repair.update(data);
-  const fullRepair = await exports.getRepairById(id);
+  // ตรวจสอบว่าเปลี่ยนสถานะเป็น "ซ่อมแล้ว"
+  const prevStatus = repair.repair_status;
+  await repair.update(updateData);
 
-  if (data.repair_status === 'ซ่อมแล้ว' && fullRepair.user_name) {
-    await notificationRepairService.createNotification({
-      user_id: repair.Stay?.User?.user_id,
-      title: 'แจ้งเตือนซ่อมเสร็จ',
-      message: `ห้อง ${fullRepair.room_num} ของคุณถูกซ่อมเรียบร้อยแล้ว`
+  if (prevStatus === 'รอซ่อม' && updateData.repair_status === 'ซ่อมแล้ว') {
+    // ดึงข้อมูล stay + room
+    const stay = await Stay.findByPk(repair.stay_id, { include: Room });
+    const roomNum = stay?.Room?.room_num || 'ไม่ระบุห้อง';
+
+    // สร้าง Notification ไปให้ผู้ใช้งาน
+    await NotificationRepair.create({
+      user_id: stay.user_id,
+      admin_id: null,
+      title: 'งานซ่อมเสร็จแล้ว',
+      message: `งานซ่อมสำหรับห้อง ${roomNum} เสร็จเรียบร้อยแล้ว`,
+      read_status: false
     });
   }
 
-  return fullRepair;
+  // ส่งข้อมูลกลับเหมือนเดิม
+  const stay = await Stay.findByPk(repair.stay_id, { include: Room });
+  const userRoomNum = stay?.Room?.room_num || null;
+  const room = await Room.findByPk(updateData.room_id || repair.room_id);
+
+  return {
+    repair_id: repair.repair_id,
+    repair_date: repair.repair_date,
+    repair_status: repair.repair_status,
+    room_num: room?.room_num || userRoomNum,
+    admin_id: repair.admin_id,
+    repairlist_id: repair.repairlist_id
+  };
 };
 
-// ลบ Repair
+// ลบข้อมูล
 exports.deleteRepair = async (id) => {
   const repair = await Repair.findByPk(id);
   if (!repair) return null;
+
   await repair.destroy();
   return repair;
 };
