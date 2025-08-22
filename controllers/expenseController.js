@@ -1,6 +1,5 @@
 const expenseService = require('../services/expenseService');
 
-// ดึงทั้งหมด
 exports.getAll = async (req, res) => {
   try {
     const expenses = await expenseService.getAllExpenses();
@@ -10,7 +9,6 @@ exports.getAll = async (req, res) => {
   }
 };
 
-// ดึงตาม ID
 exports.getById = async (req, res) => {
   try {
     const expense = await expenseService.getExpenseById(req.params.id);
@@ -21,7 +19,6 @@ exports.getById = async (req, res) => {
   }
 };
 
-// สร้างรายการ
 exports.create = async (req, res) => {
   try {
     const expense = await expenseService.createExpense(req.body);
@@ -31,7 +28,6 @@ exports.create = async (req, res) => {
   }
 };
 
-// แก้ไขรายการ
 exports.update = async (req, res) => {
   try {
     const expense = await expenseService.updateExpense(req.params.id, req.body);
@@ -42,12 +38,40 @@ exports.update = async (req, res) => {
   }
 };
 
-// ลบรายการ
 exports.delete = async (req, res) => {
   try {
     const expense = await expenseService.deleteExpense(req.params.id);
     if (!expense) return res.status(404).json({ error: 'ไม่พบข้อมูล' });
     res.json({ message: 'ลบข้อมูลสำเร็จ' });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+};
+
+exports.total = async (req, res) => {
+  try {
+    const total = await expenseService.getTotalExpenses();
+    res.json({ total });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+};
+
+exports.monthly = async (req, res) => {
+  try {
+    const { month, year } = req.params;
+    const summary = await expenseService.getMonthlyExpenses(month, year);
+    res.json(summary);
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+};
+
+exports.yearly = async (req, res) => {
+  try {
+    const { year } = req.params;
+    const summary = await expenseService.getYearlyExpenses(year);
+    res.json(summary);
   } catch (err) {
     res.status(500).json({ error: err.message });
   }
