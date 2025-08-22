@@ -1,3 +1,4 @@
+const { STRING } = require('sequelize');
 const { Repair, Admin, Stay, Room, Repairlist, User } = require('../models');
 const notificationRepairService = require('./notificationRepairService');
 
@@ -67,9 +68,9 @@ exports.getRepairById = async (id) => {
 
 // สร้าง Repair + แจ้ง Notification
 exports.createRepair = async (data) => {
+  console.log("data",data);
   const repair = await Repair.create(data);
   const fullRepair = await exports.getRepairById(repair.repair_id);
-
   // ส่ง Notification ไป admin ทุกคน
   const admins = await Admin.findAll();
   for (const admin of admins) {
