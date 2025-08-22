@@ -12,6 +12,8 @@ const repairRoute = require('./routes/repairRoute');
 const expenseRoute = require('./routes/expenseRoute');
 const paymentRoute = require('./routes/paymentRoute');
 const incomeRoute = require('./routes/incomeRoute');
+const notificationRoute = require('./routes/notificationRoute');
+const notificationRepairRoute = require('./routes/notificationRepairRoute');
 
 async function testConnection() {
   try {
@@ -41,6 +43,8 @@ app.use('/repairs', repairRoute);
 app.use('/expenses', expenseRoute);
 app.use('/payments', paymentRoute);
 app.use('/incomes', incomeRoute);
+app.use('/notifications', notificationRoute);
+app.use('/notificationrepairs', notificationRepairRoute);
 
 //Start Server
 const PORT = process.env.PORT || 5000;

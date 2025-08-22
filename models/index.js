@@ -11,6 +11,13 @@ const Expense = require('./expense');
 const BillType = require('./billtype');
 const Payment = require('./payment');
 const Income = require('./income');
+const NotificationRepair = require('./notificationRepair');
+
+User.hasMany(NotificationRepair, { foreignKey: 'user_id' });
+NotificationRepair.belongsTo(User, { foreignKey: 'user_id' });
+
+Admin.hasMany(NotificationRepair, { foreignKey: 'admin_id' });
+NotificationRepair.belongsTo(Admin, { foreignKey: 'admin_id' });
 
 Admin.hasMany(Repair, { foreignKey: 'admin_id' });
 Repair.belongsTo(Admin, { foreignKey: 'admin_id' });

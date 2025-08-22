@@ -1,5 +1,6 @@
 const { Payment, Stay, Room, Admin, BillType, User, Sequelize } = require('../models');
-const incomeService = require('./incomeService'); // import service ของ Income
+const incomeService = require('./incomeService');
+const notificationService = require('./notificationService');
 
 const handleError = (message, statusCode = 500) => {
   const error = new Error(message);
@@ -9,20 +10,16 @@ const handleError = (message, statusCode = 500) => {
 
 // สร้าง Payment
 exports.createPayment = async ({ admin_id, stay_id, water_amount = 0, ele_amount = 0, other_payment = 0, other_payment_detail = null, payment_date }) => {
-  const stay = await Stay.findByPk(stay_id, { include: Room });
-  if (!stay) handleError("ไม่พบการเข้าพัก", 404);
-  if (!stay.Room) handleError("ไม่พบข้อมูลห้องพัก", 404);
+  const stay = await Stay.findByPk(stay_id, { include: [Room, User] });
+  if (!stay || !stay.Room || !stay.User) handleError("ไม่พบข้อมูลที่เกี่ยวข้อง", 404);
 
   const roomPrice = parseFloat(stay.Room.room_price);
-
   const waterBill = await BillType.findByPk(5);
   const eleBill = await BillType.findByPk(6);
-
   if (!waterBill || !eleBill) handleError("ไม่พบประเภทบิลน้ำ/ไฟ", 404);
 
   const water_price = water_amount * parseFloat(waterBill.billtype_price);
   const ele_price = ele_amount * parseFloat(eleBill.billtype_price);
-
   const payment_total = water_price + ele_price + parseFloat(other_payment) + roomPrice;
 
   const newPayment = await Payment.create({
@@ -37,6 +34,13 @@ exports.createPayment = async ({ admin_id, stay_id, water_amount = 0, ele_amount
     payment_total,
     payment_date,
     payment_status: '1', // กำลังดำเนินการ
+  });
+
+  // ส่ง Notification แจ้ง user
+  await notificationService.createNotification({
+    user_id: stay.User.user_id,
+    title: 'แจ้งเตือนการชำระเงินใหม่',
+    message: `คุณมีค่าใช้จ่ายใหม่ จำนวน ${payment_total} บาท สำหรับห้อง ${stay.Room.room_num}`
   });
 
   return newPayment;
@@ -96,8 +100,12 @@ exports.getPaymentById = async (id) => {
 
 // อัปเดต Payment
 exports.updatePayment = async (id, data) => {
-  const payment = await Payment.findByPk(id);
+  // ดึง Payment ปัจจุบัน
+  const payment = await Payment.findByPk(id, { include: [{ model: Stay, include: [User, Room] }] });
   if (!payment) handleError("ไม่พบข้อมูลการชำระ", 404);
+
+  const stay = payment.Stay;
+  if (!stay || !stay.Room) handleError("ไม่พบข้อมูลห้องพัก", 404);
 
   // คำนวณใหม่ถ้ามีค่าที่เกี่ยวกับราคา
   if (data.water_amount !== undefined || data.ele_amount !== undefined || data.other_payment !== undefined) {
@@ -107,13 +115,10 @@ exports.updatePayment = async (id, data) => {
 
     const current_water_amount = data.water_amount ?? payment.water_amount;
     const current_ele_amount = data.ele_amount ?? payment.ele_amount;
-    const current_other_payment = data.other_payment ?? payment.other_payment;
+    const current_other_payment = data.other_payment ?? payment.other_payment ?? 0;
 
     const water_price = current_water_amount * parseFloat(waterBill.billtype_price);
     const ele_price = current_ele_amount * parseFloat(eleBill.billtype_price);
-
-    const stay = await Stay.findByPk(payment.stay_id, { include: Room });
-    if (!stay || !stay.Room) handleError("ไม่พบข้อมูลห้องพัก", 404);
     const roomPrice = parseFloat(stay.Room.room_price);
 
     data.water_price = water_price;
@@ -121,15 +126,27 @@ exports.updatePayment = async (id, data) => {
     data.payment_total = water_price + ele_price + parseFloat(current_other_payment) + roomPrice;
   }
 
+  // อัปเดต Payment
   await payment.update(data);
+  await payment.reload(); // ดึงค่าล่าสุดจาก DB
 
-  // ถ้า payment_status = '2' ให้สร้าง Income อัตโนมัติ
-  if(data.payment_status === '2') {
+  // สร้าง Income อัตโนมัติ และส่ง Notification ถ้า payment_status = '2'
+  if (data.payment_status === '2') {
     await incomeService.createIncomeFromPayment(payment);
+
+    const userId = stay.User?.user_id;
+    if (userId) {
+      await notificationService.createNotification({
+        user_id: userId,
+        title: 'แจ้งเตือนการชำระเงินใหม่',
+        message: `คุณได้ชำระเงินแล้ว จำนวน ${payment.payment_total} บาท สำหรับห้อง ${stay.Room.room_num}`
+      });
+    }
   }
 
   return payment;
 };
+
 
 // ลบ Payment
 exports.deletePayment = async (id) => {

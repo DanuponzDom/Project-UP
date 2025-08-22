@@ -9,14 +9,14 @@ const Repair = sequelize.define('Repair', {
   },
   admin_id: {
     type: DataTypes.UUID,
-    allowNull: false,
+    allowNull: true, // admin อาจจะ null ถ้า user แจ้ง
   },
   stay_id: {
     type: DataTypes.UUID,
-    allowNull: false,
+    allowNull: true, // user อาจจะ null ถ้า admin แจ้ง
   },
   repairlist_id: {
-    type: DataTypes.INTEGER, // master data
+    type: DataTypes.INTEGER,
     allowNull: false,
   },
   repair_date: {
