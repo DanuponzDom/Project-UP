@@ -10,6 +10,7 @@ const Repairlist = require('./repairlist');
 const Expense = require('./expense');
 const BillType = require('./billtype');
 const Payment = require('./payment');
+const Income = require('./income');
 
 Admin.hasMany(Repair, { foreignKey: 'admin_id' });
 Repair.belongsTo(Admin, { foreignKey: 'admin_id' });
@@ -35,6 +36,12 @@ Payment.belongsTo(Admin, { foreignKey: 'admin_id' });
 Stay.hasMany(Payment, { foreignKey: 'stay_id' });
 Payment.belongsTo(Stay, { foreignKey: 'stay_id' });
 
+Payment.hasOne(Income, { foreignKey: 'payment_id' });
+Income.belongsTo(Payment, { foreignKey: 'payment_id' });
+
+Admin.hasMany(Income, { foreignKey: 'admin_id' });
+Income.belongsTo(Admin, { foreignKey: 'admin_id' });
+
 module.exports = {
   sequelize,
   Sequelize,
@@ -47,4 +54,5 @@ module.exports = {
   Expense,
   BillType,
   Payment,
+  Income,
 };

@@ -35,10 +35,14 @@ const Payment = sequelize.define('Payment', {
     allowNull: true,
     defaultValue: 0,
   },
-  payment_insurance: {
+  other_payment: {
     type: DataTypes.DECIMAL(12, 2),
     allowNull: true,
     defaultValue: 0,
+  },
+  other_payment_detail: {
+    type: DataTypes.STRING,
+    allowNull: true,
   },
   payment_total: {
     type: DataTypes.DECIMAL(12, 2),
@@ -52,7 +56,7 @@ const Payment = sequelize.define('Payment', {
   payment_status: {
     type: DataTypes.CHAR(1),
     allowNull: false,
-    defaultValue: '0', // 0=ค้างชำระ,1=ดำเนินการ,2=ชำระแล้ว
+    defaultValue: '1', // 0 = ค้างชำระ / 1 = กำลังดำเนินการ / 2 = จ่ายละโว้ยยยยยย
   }
 }, {
   tableName: 'payments',

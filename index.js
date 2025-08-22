@@ -1,6 +1,7 @@
 const express = require('express');
 const cors = require('cors');
 const sequelize = require('./config/database');
+
 const adminRoute = require('./routes/adminRoute');
 const userRoute = require('./routes/userRoute');
 const roomRoute = require('./routes/roomRoute');
@@ -10,6 +11,7 @@ const repairlistRoute = require('./routes/repairlistRoute');
 const repairRoute = require('./routes/repairRoute');
 const expenseRoute = require('./routes/expenseRoute');
 const paymentRoute = require('./routes/paymentRoute');
+const incomeRoute = require('./routes/incomeRoute');
 
 async function testConnection() {
   try {
@@ -38,6 +40,7 @@ app.use('/repairlists', repairlistRoute);
 app.use('/repairs', repairRoute);
 app.use('/expenses', expenseRoute);
 app.use('/payments', paymentRoute);
+app.use('/incomes', incomeRoute);
 
 //Start Server
 const PORT = process.env.PORT || 5000;
