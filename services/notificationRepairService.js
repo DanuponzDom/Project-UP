@@ -39,6 +39,7 @@ exports.getNotificationById = async (id) => {
 
 // สร้าง Notification
 exports.createNotification = async ({ user_id, admin_id, title, message }) => {
+  console.log(user_id, admin_id, title, message)
   return await NotificationRepair.create({
     user_id,
     admin_id,

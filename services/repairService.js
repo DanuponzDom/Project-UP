@@ -1,5 +1,5 @@
 const { Repair, Admin, Stay, Room, Repairlist } = require('../models');
-const { createNotification } = require('./notificationRepairService');
+const createNotification = require('./notificationRepairService');
 
 // ดึงข้อมูลทั้งหมด
 exports.getAllRepairs = async () => {
@@ -58,7 +58,7 @@ exports.createRepair = async (data) => {
   const roomNum = stay?.Room?.room_num || 'ไม่ระบุห้อง';
 
   // สร้าง Notification ไปให้ admin
-  await NotificationRepair.create({
+  await createNotification.createNotification({
     user_id: null,
     admin_id: repair.admin_id, // ส่งไปยัง admin
     title: 'มีรายการซ่อมใหม่',
@@ -85,7 +85,7 @@ exports.updateRepair = async (id, updateData) => {
     const roomNum = stay?.Room?.room_num || 'ไม่ระบุห้อง';
 
     // สร้าง Notification ไปให้ผู้ใช้งาน
-    await NotificationRepair.create({
+    await createNotification.createNotification({
       user_id: stay.user_id,
       admin_id: null,
       title: 'งานซ่อมเสร็จแล้ว',
