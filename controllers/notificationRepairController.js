@@ -1,43 +1,70 @@
-// controllers/notificationRepairController.js
-const notificationService = require('../services/notificationRepairService');
+const notificationRepairService = require('../services/notificationRepairService');
 
-// ดึง notification ทั้งหมด
+// GET /notifications
 exports.getAll = async (req, res) => {
   try {
-    const notis = await notificationService.getAllNotifications();
-    res.json(notis);
+    const notifications = await notificationRepairService.getAllNotifications();
+    res.json(notifications);
   } catch (err) {
-    res.status(500).json({ message: err.message });
+    res.status(500).json({ error: err.message });
   }
 };
 
-// ดึง notification ของ user
-exports.getByUser = async (req, res) => {
+// GET /notifications/user?user_id=xxx หรือ /notifications/admin?admin_id=xxx
+exports.getByUserOrAdmin = async (req, res) => {
   try {
-    const notis = await notificationService.getNotificationsByUser(req.params.user_id);
-    res.json(notis);
+    const { user_id, admin_id } = req.query;
+    if (!user_id && !admin_id) {
+      return res.status(400).json({ error: "ต้องระบุ user_id หรือ admin_id" });
+    }
+    const notifications = await notificationRepairService.getNotificationsByUserOrAdmin({ user_id, admin_id });
+    res.json(notifications);
   } catch (err) {
-    res.status(500).json({ message: err.message });
+    res.status(500).json({ error: err.message });
   }
 };
 
-// ดึง notification ของ admin
-exports.getByAdmin = async (req, res) => {
+// GET /notifications/:id
+exports.getById = async (req, res) => {
   try {
-    const notis = await notificationService.getNotificationsByAdmin(req.params.admin_id);
-    res.json(notis);
-  } catch (err) {
-    res.status(500).json({ message: err.message });
-  }
-};
-
-// ทำเครื่องหมายว่าอ่านแล้ว
-exports.markRead = async (req, res) => {
-  try {
-    const notif = await notificationService.markAsRead(req.params.notification_id);
-    if (!notif) return res.status(404).json({ message: 'ไม่พบ notification' });
+    const notif = await notificationRepairService.getNotificationById(req.params.id);
+    if (!notif) return res.status(404).json({ error: 'ไม่พบ Notification' });
     res.json(notif);
   } catch (err) {
-    res.status(500).json({ message: err.message });
+    res.status(500).json({ error: err.message });
+  }
+};
+
+// POST /notifications
+exports.create = async (req, res) => {
+  try {
+    const { user_id, admin_id, title, message } = req.body;
+    if (!title || (!user_id && !admin_id)) {
+      return res.status(400).json({ error: "ต้องระบุ title และ user_id หรือ admin_id อย่างน้อยหนึ่งค่า" });
+    }
+    const notif = await notificationRepairService.createNotification({ user_id, admin_id, title, message });
+    res.status(201).json(notif);
+  } catch (err) {
+    res.status(400).json({ error: err.message });
+  }
+};
+
+// PATCH /notifications/:id/read
+exports.markAsRead = async (req, res) => {
+  try {
+    const notif = await notificationRepairService.markAsRead(req.params.id);
+    res.json({ message: "อ่าน Notification แล้ว", notif });
+  } catch (err) {
+    res.status(400).json({ error: err.message });
+  }
+};
+
+// DELETE /notifications/:id
+exports.delete = async (req, res) => {
+  try {
+    const notif = await notificationRepairService.deleteNotification(req.params.id);
+    res.json({ message: 'ลบ Notification เรียบร้อยแล้ว', notif });
+  } catch (err) {
+    res.status(400).json({ error: err.message });
   }
 };
