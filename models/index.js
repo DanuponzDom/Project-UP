@@ -13,12 +13,14 @@ const Payment = require('./payment');
 const Income = require('./income');
 const NotificationRepair = require('./notificationRepair');
 
-Admin.hasMany(NotificationRepair, { foreignKey: 'admin_id', as: 'notifications' });
+// NotificationRepair associations
+Admin.hasMany(NotificationRepair, { foreignKey: 'admin_id', as: 'notificationRepair' });
 NotificationRepair.belongsTo(Admin, { foreignKey: 'admin_id', as: 'admin' });
 
-User.hasMany(NotificationRepair, { foreignKey: 'user_id', as: 'notifications' });
+User.hasMany(NotificationRepair, { foreignKey: 'user_id', as: 'notificationRepair' });
 NotificationRepair.belongsTo(User, { foreignKey: 'user_id', as: 'user' });
 
+// Repair associations
 Admin.hasMany(Repair, { foreignKey: 'admin_id' });
 Repair.belongsTo(Admin, { foreignKey: 'admin_id' });
 
