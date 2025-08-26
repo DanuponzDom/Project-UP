@@ -9,7 +9,7 @@ const Notification = sequelize.define('Notification', {
   },
   user_id: {
     type: DataTypes.UUID,
-    allowNull: false,
+    allowNull: true,
   },
   title: {
     type: DataTypes.STRING,
