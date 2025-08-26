@@ -49,6 +49,35 @@ exports.getRepairById = async (id) => {
   };
 };
 
+// ดึงข้อมูลการซ่อมตาม user_id
+exports.getRepairsByUserId = async (userId) => {
+  const repairs = await Repair.findAll({
+    include: [
+      { model: Admin, attributes: ['admin_name'] },
+      { 
+        model: Stay,
+        attributes: ['stay_id', 'user_id'],
+        include: [{ model: Room, attributes: ['room_num'] }],
+        where: { user_id: userId } // กรองเฉพาะ user นี้
+      },
+      { model: Repairlist, attributes: ['repairlist_details', 'repairlist_price'] },
+    ],
+  });
+
+  return repairs.map(r => ({
+    repair_id: r.repair_id,
+    repair_date: r.repair_date,
+    repair_status: r.repair_status,
+    room_num: r.Stay?.Room?.room_num || null,
+    admin_name: r.Admin?.admin_name || null,
+    repairlist: {
+      repairlist_details: r.Repairlist?.repairlist_details || null,
+      repairlist_price: r.Repairlist?.repairlist_price || null,
+    },
+  }));
+};
+
+
 // เพิ่มข้อมูล
 exports.createRepair = async (data) => {
   const repair = await Repair.create(data);

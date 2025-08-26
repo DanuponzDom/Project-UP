@@ -21,6 +21,22 @@ exports.getById = async (req, res) => {
   }
 };
 
+// ดึงรายการซ่อมของ user ตาม user_id
+exports.getByUserId = async (req, res) => {
+  try {
+    const { user_id } = req.params;
+    const repairs = await repairService.getRepairsByUserId(user_id);
+
+    if (!repairs || repairs.length === 0) {
+      return res.status(404).json({ message: 'ไม่พบข้อมูลการซ่อมของผู้ใช้คนนี้' });
+    }
+
+    res.json(repairs);
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+};
+
 // เพิ่มข้อมูลใหม่ และแจ้ง Admin
 exports.create = async (req, res) => {
   try {
