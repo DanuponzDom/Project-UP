@@ -53,6 +53,7 @@ exports.getAllPayments = async () => {
       'payment_id',
       'stay_id',
       [Sequelize.col('Admin.admin_name'), 'admin_name'],
+      [Sequelize.col('Stay.User.user_id'), 'user_id'],
       [Sequelize.col('Stay.User.user_name'), 'user_name'],
       [Sequelize.col('Stay.Room.room_num'), 'room_num'],
       'water_amount',

@@ -1,6 +1,7 @@
 const express = require('express');
 const cors = require('cors');
 const sequelize = require('./config/database');
+const path = require('path');
 
 const adminRoute = require('./routes/adminRoute');
 const userRoute = require('./routes/userRoute');
@@ -14,6 +15,7 @@ const paymentRoute = require('./routes/paymentRoute');
 const incomeRoute = require('./routes/incomeRoute');
 const notificationRoute = require('./routes/notificationRoute');
 const notificationRepairRoute = require('./routes/notificationRepairRoute');
+const paymentSlipRoute = require('./routes/paymentSlipRoute');
 
 async function testConnection() {
   try {
@@ -30,7 +32,10 @@ const app = express();
 
 // Middleware
 app.use(cors());
-app.use(express.json()); // แปลงข้อมูลเป็น JSON
+app.use(express.json());
+
+// เปิดให้เข้าถึงโฟลเดอร์ uploads
+app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 
 // Routes
 app.use('/users', userRoute);
@@ -45,6 +50,7 @@ app.use('/payments', paymentRoute);
 app.use('/incomes', incomeRoute);
 app.use('/notifications', notificationRoute);
 app.use('/notificationrepairs', notificationRepairRoute);
+app.use('/payment-slips', paymentSlipRoute);
 
 //Start Server
 const PORT = process.env.PORT || 5000;
