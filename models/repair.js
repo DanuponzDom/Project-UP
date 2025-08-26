@@ -9,7 +9,7 @@ const Repair = sequelize.define('Repair', {
   },
   admin_id: {
     type: DataTypes.UUID,
-    allowNull: false,
+    allowNull: true,
   },
   stay_id: {
     type: DataTypes.UUID,
@@ -17,7 +17,7 @@ const Repair = sequelize.define('Repair', {
   },
   repairlist_id: {
     type: DataTypes.INTEGER,
-    allowNull: true,
+    allowNull: false,
   },
   repair_date: {
     type: DataTypes.DATEONLY,
