@@ -3,8 +3,16 @@ const { PaymentSlip, Payment, Stay, Notification } = require('../models');
 // อัปโหลด slip (เพิ่ม Notification ไปที่ admin)
 exports.uploadSlip = async ({ payment_id, slip_url }) => {
   // ดึง Payment พร้อม Stay
-  const payment = await Payment.findByPk(payment_id, { include: Stay });
-  if (!payment) throw new Error('ไม่พบ payment_id');
+  const payment = await Payment.findByPk(payment_id, {
+  include: [
+    {
+      model: Stay,       // ไม่มี 'as'
+      include: [User, Room]  // ดึงข้อมูล user/room ของ stay
+    }
+  ]
+});
+
+if (!payment) throw new Error('ไม่พบ payment_id');
 
   // สร้าง PaymentSlip
   const slip = await PaymentSlip.create({
