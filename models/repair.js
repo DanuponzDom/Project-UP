@@ -13,11 +13,11 @@ const Repair = sequelize.define('Repair', {
   },
   stay_id: {
     type: DataTypes.UUID,
-    allowNull: false,
+    allowNull: true,
   },
   repairlist_id: {
     type: DataTypes.INTEGER,
-    allowNull: false,
+    allowNull: true,
   },
   repair_date: {
     type: DataTypes.DATEONLY,
