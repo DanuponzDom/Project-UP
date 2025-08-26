@@ -83,7 +83,7 @@ exports.createRepair = async (data) => {
   const repair = await Repair.create(data);
 
   // ดึงข้อมูล stay + room
-  const stay = await Stay.findByPk(repair.stay_id, { include: Room });
+  const stay = await Stay.findByPk(repair.stay_id, { include: [{ model: Room }] });
   const roomNum = stay?.Room?.room_num || 'ไม่ระบุห้อง';
 
   // สร้าง Notification ไปให้ admin
@@ -110,7 +110,7 @@ exports.updateRepair = async (id, updateData) => {
 
   if (prevStatus === 'รอซ่อม' && updateData.repair_status === 'ซ่อมแล้ว') {
     // ดึงข้อมูล stay + room
-    const stay = await Stay.findByPk(repair.stay_id, { include: Room });
+    const stay = await Stay.findByPk(repair.stay_id, { include: [{ model: Room }] });
     const roomNum = stay?.Room?.room_num || 'ไม่ระบุห้อง';
 
     // สร้าง Notification ไปให้ผู้ใช้งาน
@@ -124,7 +124,7 @@ exports.updateRepair = async (id, updateData) => {
   }
 
   // ส่งข้อมูลกลับเหมือนเดิม
-  const stay = await Stay.findByPk(repair.stay_id, { include: Room });
+  const stay = await Stay.findByPk(repair.stay_id, { include: [{ model: Room }] });
   const userRoomNum = stay?.Room?.room_num || null;
   const room = await Room.findByPk(updateData.room_id || repair.room_id);
 
