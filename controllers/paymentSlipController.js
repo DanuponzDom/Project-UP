@@ -46,7 +46,7 @@ exports.uploadSlip = [
 
       // ดึงข้อมูล Payment + Stay (ใช้ alias ให้ตรงกับ model)
       const payment = await Payment.findByPk(payment_id, {
-        include: { model: Stay, as: 'stay' }
+        include: [{ model: Stay, as: 'stay', }]
       });
       if (!payment) {
         return res.status(404).json({ error: "ไม่พบ payment_id" });
