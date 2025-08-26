@@ -8,9 +8,9 @@ const handleError = (message, statusCode = 500) => {
   throw error;
 };
 
-// สร้าง Payment
+// ==================== CREATE PAYMENT ====================
 exports.createPayment = async ({ admin_id, stay_id, water_amount = 0, ele_amount = 0, other_payment = 0, other_payment_detail = null, payment_date }) => {
-  const stay = await Stay.findByPk(stay_id, { include: [Room, User] });
+  const stay = await Stay.findByPk(stay_id, { include: [{ model: Room }, { model: User }] });
   if (!stay || !stay.Room || !stay.User) handleError("ไม่พบข้อมูลที่เกี่ยวข้อง", 404);
 
   const roomPrice = parseFloat(stay.Room.room_price);
@@ -33,7 +33,7 @@ exports.createPayment = async ({ admin_id, stay_id, water_amount = 0, ele_amount
     other_payment_detail,
     payment_total,
     payment_date,
-    payment_status: '1', // กำลังดำเนินการ
+    payment_status: '1',
   });
 
   // ส่ง Notification แจ้ง user
@@ -46,16 +46,16 @@ exports.createPayment = async ({ admin_id, stay_id, water_amount = 0, ele_amount
   return newPayment;
 };
 
-// ดึง Payment ทั้งหมด
+// ==================== GET ALL PAYMENTS ====================
 exports.getAllPayments = async () => {
   return await Payment.findAll({
     attributes: [
       'payment_id',
       'stay_id',
       [Sequelize.col('Admin.admin_name'), 'admin_name'],
-      [Sequelize.col('Stay.User.user_id'), 'user_id'],
-      [Sequelize.col('Stay.User.user_name'), 'user_name'],
-      [Sequelize.col('Stay.Room.room_num'), 'room_num'],
+      [Sequelize.col('stay.User.user_id'), 'user_id'],
+      [Sequelize.col('stay.User.user_name'), 'user_name'],
+      [Sequelize.col('stay.Room.room_num'), 'room_num'],
       'water_amount',
       'water_price',
       'ele_amount',
@@ -67,20 +67,20 @@ exports.getAllPayments = async () => {
       'payment_status'
     ],
     include: [
-      { model: Stay, attributes: [], include: [{ model: Room, attributes: [] }, { model: User, attributes: [] }] },
+      { model: Stay, as: 'stay', attributes: [], include: [{ model: Room, attributes: [] }, { model: User, attributes: [] }] },
       { model: Admin, attributes: [] }
     ]
   });
 };
 
-// ดึง Payment ตาม ID
+// ==================== GET PAYMENT BY ID ====================
 exports.getPaymentById = async (id) => {
   const payment = await Payment.findByPk(id, {
     attributes: [
       'payment_id',
       [Sequelize.col('Admin.admin_name'), 'admin_name'],
-      [Sequelize.col('Stay.User.user_name'), 'user_name'],
-      [Sequelize.col('Stay.Room.room_num'), 'room_num'],
+      [Sequelize.col('stay.User.user_name'), 'user_name'],
+      [Sequelize.col('stay.Room.room_num'), 'room_num'],
       'water_amount',
       'water_price',
       'ele_amount',
@@ -92,7 +92,7 @@ exports.getPaymentById = async (id) => {
       'payment_status'
     ],
     include: [
-      { model: Stay, attributes: [], include: [{ model: Room, attributes: [] }, { model: User, attributes: [] }] },
+      { model: Stay, as: 'stay', attributes: [], include: [{ model: Room, attributes: [] }, { model: User, attributes: [] }] },
       { model: Admin, attributes: [] }
     ]
   });
@@ -100,16 +100,15 @@ exports.getPaymentById = async (id) => {
   return payment;
 };
 
-// อัปเดต Payment
+// ==================== UPDATE PAYMENT ====================
 exports.updatePayment = async (id, data) => {
-  // ดึง Payment ปัจจุบัน
-  const payment = await Payment.findByPk(id, { include: [{ model: Stay, include: [User, Room] }] });
+  const payment = await Payment.findByPk(id, { include: [{ model: Stay, as: 'stay', include: [User, Room] }] });
   if (!payment) handleError("ไม่พบข้อมูลการชำระ", 404);
 
-  const stay = payment.Stay;
+  const stay = payment.stay;
   if (!stay || !stay.Room) handleError("ไม่พบข้อมูลห้องพัก", 404);
 
-  // คำนวณใหม่ถ้ามีค่าที่เกี่ยวกับราคา
+  // คำนวณราคาถ้าเปลี่ยนค่า
   if (data.water_amount !== undefined || data.ele_amount !== undefined || data.other_payment !== undefined) {
     const waterBill = await BillType.findByPk(5);
     const eleBill = await BillType.findByPk(6);
@@ -128,14 +127,11 @@ exports.updatePayment = async (id, data) => {
     data.payment_total = water_price + ele_price + parseFloat(current_other_payment) + roomPrice;
   }
 
-  // อัปเดต Payment
   await payment.update(data);
-  await payment.reload(); // ดึงค่าล่าสุดจาก DB
+  await payment.reload();
 
-  // สร้าง Income อัตโนมัติ และส่ง Notification ถ้า payment_status = '2'
   if (data.payment_status === '2') {
     await incomeService.createIncomeFromPayment(payment);
-
     const userId = stay.User?.user_id;
     if (userId) {
       await notificationService.createNotification({
@@ -149,8 +145,7 @@ exports.updatePayment = async (id, data) => {
   return payment;
 };
 
-
-// ลบ Payment
+// ==================== DELETE PAYMENT ====================
 exports.deletePayment = async (id) => {
   const payment = await Payment.findByPk(id);
   if (!payment) handleError("ไม่พบข้อมูลการชำระ", 404);

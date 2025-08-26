@@ -18,6 +18,9 @@ const Notification = require('./notification');
 Admin.hasMany(Notification, { foreignKey: 'user_id', as: 'notifications' });
 Notification.belongsTo(Admin, { foreignKey: 'user_id', as: 'admin' });
 
+User.hasMany(Notification, { foreignKey: 'user_id', as: 'notifications' });
+Notification.belongsTo(User, { foreignKey: 'user_id', as: 'user' });
+
 Payment.hasMany(PaymentSlip, { foreignKey: 'payment_id', as: 'slips' });
 PaymentSlip.belongsTo(Payment, { foreignKey: 'payment_id', as: 'payment' });
 
@@ -53,17 +56,17 @@ Stay.belongsTo(Room, { foreignKey: 'room_id' });
 Admin.hasMany(Expense, { foreignKey: 'admin_id' });
 Expense.belongsTo(Admin, { foreignKey: 'admin_id' });
 
-Admin.hasMany(Payment, { foreignKey: 'admin_id' });
-Payment.belongsTo(Admin, { foreignKey: 'admin_id' });
+Admin.hasMany(Payment, { foreignKey: 'admin_id', as: 'payments' });
+Payment.belongsTo(Admin, { foreignKey: 'admin_id', as: 'admin' });
 
-Stay.hasMany(Payment, { foreignKey: 'stay_id' });
-Payment.belongsTo(Stay, { foreignKey: 'stay_id' , as: 'stay' });
+Stay.hasMany(Payment, { foreignKey: 'stay_id', as: 'payments' });
+Payment.belongsTo(Stay, { foreignKey: 'stay_id', as: 'stay' });
 
-Payment.hasOne(Income, { foreignKey: 'payment_id' });
-Income.belongsTo(Payment, { foreignKey: 'payment_id' });
+Payment.hasOne(Income, { foreignKey: 'payment_id', as: 'income' });
+Income.belongsTo(Payment, { foreignKey: 'payment_id', as: 'payment' });
 
-Admin.hasMany(Income, { foreignKey: 'admin_id' });
-Income.belongsTo(Admin, { foreignKey: 'admin_id' });
+Admin.hasMany(Income, { foreignKey: 'admin_id', as: 'incomes' });
+Income.belongsTo(Admin, { foreignKey: 'admin_id', as: 'admin' });
 
 module.exports = {
   sequelize,
