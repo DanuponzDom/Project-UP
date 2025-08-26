@@ -1,6 +1,8 @@
+// 1. Imports
 const Sequelize = require('sequelize');
 const sequelize = require('../config/database');
 
+// 2. Model Definitions
 const Admin = require('./admin');
 const User = require('./user');
 const Room = require('./room');
@@ -15,12 +17,49 @@ const PaymentSlip = require('./paymentSlip');
 const NotificationRepair = require('./notificationRepair');
 const Notification = require('./notification');
 
+// 3. Associations
+
+// Notification
 Admin.hasMany(Notification, { foreignKey: 'user_id', as: 'notifications' });
 Notification.belongsTo(Admin, { foreignKey: 'user_id', as: 'admin' });
 
-User.hasMany(Notification, { foreignKey: 'user_id', as: 'notifications' });
-Notification.belongsTo(User, { foreignKey: 'user_id', as: 'user' });
+// NotificationRepair
+Admin.hasMany(NotificationRepair, { foreignKey: 'admin_id', as: 'notificationRepair' });
+NotificationRepair.belongsTo(Admin, { foreignKey: 'admin_id', as: 'admin' });
+User.hasMany(NotificationRepair, { foreignKey: 'user_id', as: 'notificationRepair' });
+NotificationRepair.belongsTo(User, { foreignKey: 'user_id', as: 'user' });
 
+// Repair
+Admin.hasMany(Repair, { foreignKey: 'admin_id' });
+Repair.belongsTo(Admin, { foreignKey: 'admin_id' });
+Stay.hasMany(Repair, { foreignKey: 'stay_id' });
+Repair.belongsTo(Stay, { foreignKey: 'stay_id' });
+Repairlist.hasMany(Repair, { foreignKey: 'repairlist_id' });
+Repair.belongsTo(Repairlist, { foreignKey: 'repairlist_id' });
+
+// Stay
+User.hasMany(Stay, { foreignKey: 'user_id' });
+Stay.belongsTo(User, { foreignKey: 'user_id' });
+Room.hasMany(Stay, { foreignKey: 'room_id' });
+Stay.belongsTo(Room, { foreignKey: 'room_id' });
+
+// Expense
+Admin.hasMany(Expense, { foreignKey: 'admin_id' });
+Expense.belongsTo(Admin, { foreignKey: 'admin_id' });
+
+// Payment
+Admin.hasMany(Payment, { foreignKey: 'admin_id' });
+Payment.belongsTo(Admin, { foreignKey: 'admin_id' });
+Stay.hasMany(Payment, { foreignKey: 'stay_id' });
+Payment.belongsTo(Stay, { foreignKey: 'stay_id', as: 'stay' });
+
+// Income
+Payment.hasOne(Income, { foreignKey: 'payment_id' });
+Income.belongsTo(Payment, { foreignKey: 'payment_id' });
+Admin.hasMany(Income, { foreignKey: 'admin_id' });
+Income.belongsTo(Admin, { foreignKey: 'admin_id' });
+
+// PaymentSlip
 Payment.hasMany(PaymentSlip, { foreignKey: 'payment_id', as: 'slips' });
 PaymentSlip.belongsTo(Payment, { foreignKey: 'payment_id', as: 'payment' });
 
@@ -30,44 +69,7 @@ PaymentSlip.belongsTo(Stay, { foreignKey: 'stay_id', as: 'stay' });
 User.hasMany(PaymentSlip, { foreignKey: 'user_id', as: 'slips' });
 PaymentSlip.belongsTo(User, { foreignKey: 'user_id', as: 'user' });
 
-// NotificationRepair associations
-Admin.hasMany(NotificationRepair, { foreignKey: 'admin_id', as: 'notificationRepair' });
-NotificationRepair.belongsTo(Admin, { foreignKey: 'admin_id', as: 'admin' });
-
-User.hasMany(NotificationRepair, { foreignKey: 'user_id', as: 'notificationRepair' });
-NotificationRepair.belongsTo(User, { foreignKey: 'user_id', as: 'user' });
-
-// Repair associations
-Admin.hasMany(Repair, { foreignKey: 'admin_id' });
-Repair.belongsTo(Admin, { foreignKey: 'admin_id' });
-
-Stay.hasMany(Repair, { foreignKey: 'stay_id' });
-Repair.belongsTo(Stay, { foreignKey: 'stay_id' });
-
-Repairlist.hasMany(Repair, { foreignKey: 'repairlist_id' });
-Repair.belongsTo(Repairlist, { foreignKey: 'repairlist_id' });
-
-User.hasMany(Stay, { foreignKey: 'user_id' });
-Stay.belongsTo(User, { foreignKey: 'user_id' });
-
-Room.hasMany(Stay, { foreignKey: 'room_id' });
-Stay.belongsTo(Room, { foreignKey: 'room_id' });
-
-Admin.hasMany(Expense, { foreignKey: 'admin_id' });
-Expense.belongsTo(Admin, { foreignKey: 'admin_id' });
-
-Admin.hasMany(Payment, { foreignKey: 'admin_id', as: 'payments' });
-Payment.belongsTo(Admin, { foreignKey: 'admin_id', as: 'admin' });
-
-Stay.hasMany(Payment, { foreignKey: 'stay_id', as: 'payments' });
-Payment.belongsTo(Stay, { foreignKey: 'stay_id', as: 'stay' });
-
-Payment.hasOne(Income, { foreignKey: 'payment_id', as: 'income' });
-Income.belongsTo(Payment, { foreignKey: 'payment_id', as: 'payment' });
-
-Admin.hasMany(Income, { foreignKey: 'admin_id', as: 'incomes' });
-Income.belongsTo(Admin, { foreignKey: 'admin_id', as: 'admin' });
-
+// 4. Exports
 module.exports = {
   sequelize,
   Sequelize,

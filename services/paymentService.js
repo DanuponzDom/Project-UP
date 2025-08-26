@@ -10,7 +10,7 @@ const handleError = (message, statusCode = 500) => {
 
 // ==================== CREATE PAYMENT ====================
 exports.createPayment = async ({ admin_id, stay_id, water_amount = 0, ele_amount = 0, other_payment = 0, other_payment_detail = null, payment_date }) => {
-  const stay = await Stay.findByPk(stay_id, { include: [{ model: Room }, { model: User }] });
+  const stay = await Stay.findByPk(stay_id, { include: [Room, User] });
   if (!stay || !stay.Room || !stay.User) handleError("ไม่พบข้อมูลที่เกี่ยวข้อง", 404);
 
   const roomPrice = parseFloat(stay.Room.room_price);
@@ -66,12 +66,7 @@ exports.getAllPayments = async () => {
       'payment_date',
       'payment_status'
     ],
-    include: [
-      { model: Stay, as: 'stay', attributes: [], include: [{ model: Room, attributes: [] }, { model: User, attributes: [] }] },
-      { model: Admin, attributes: [] }
-    ]
-  });
-};
+    include: [ { model: Stay, attributes: [], include: [{ model: Room, attributes: [] }, { model: User, attributes: [] }] }, { model: Admin, attributes: [] } ] }); };
 
 // ==================== GET PAYMENT BY ID ====================
 exports.getPaymentById = async (id) => {
@@ -91,18 +86,13 @@ exports.getPaymentById = async (id) => {
       'payment_date',
       'payment_status'
     ],
-    include: [
-      { model: Stay, as: 'stay', attributes: [], include: [{ model: Room, attributes: [] }, { model: User, attributes: [] }] },
-      { model: Admin, attributes: [] }
-    ]
-  });
-  if (!payment) handleError("ไม่พบข้อมูลการชำระ", 404);
-  return payment;
-};
+    include: [ 
+      { model: Stay, attributes: [], include: [{ model: Room, attributes: [] }, { model: User, attributes: [] }] }, { model: Admin, attributes: [] } ] }); 
+      if (!payment) handleError("ไม่พบข้อมูลการชำระ", 404); return payment; };
 
 // ==================== UPDATE PAYMENT ====================
 exports.updatePayment = async (id, data) => {
-  const payment = await Payment.findByPk(id, { include: [{ model: Stay, as: 'stay', include: [User, Room] }] });
+  const payment = await Payment.findByPk(id, { include: [{ model: Stay, include: [User, Room] }] });
   if (!payment) handleError("ไม่พบข้อมูลการชำระ", 404);
 
   const stay = payment.stay;
