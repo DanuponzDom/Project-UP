@@ -57,7 +57,7 @@ Admin.hasMany(Payment, { foreignKey: 'admin_id' });
 Payment.belongsTo(Admin, { foreignKey: 'admin_id' });
 
 Stay.hasMany(Payment, { foreignKey: 'stay_id' });
-Payment.belongsTo(Stay, { foreignKey: 'stay_id' });
+Payment.belongsTo(Stay, { foreignKey: 'stay_id' , as: 'stay' });
 
 Payment.hasOne(Income, { foreignKey: 'payment_id' });
 Income.belongsTo(Payment, { foreignKey: 'payment_id' });
