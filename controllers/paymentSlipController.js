@@ -44,8 +44,10 @@ exports.uploadSlip = [
         return res.status(400).json({ error: "กรุณาอัปโหลดไฟล์ slip" });
       }
 
-      // ดึงข้อมูล Payment + Stay
-      const payment = await Payment.findByPk(payment_id, { include: Stay });
+      // ดึงข้อมูล Payment + Stay (ใช้ alias ให้ตรงกับ model)
+      const payment = await Payment.findByPk(payment_id, {
+        include: { model: Stay, as: 'stay' }
+      });
       if (!payment) {
         return res.status(404).json({ error: "ไม่พบ payment_id" });
       }
@@ -57,15 +59,15 @@ exports.uploadSlip = [
       const slip = await PaymentSlip.create({
         payment_id,
         stay_id: payment.stay_id,
-        user_id: payment.Stay.user_id,
+        user_id: payment.stay.user_id,
         slip_url,
       });
 
       // สร้าง Notification แจ้งไปที่ Admin
       await Notification.create({
-        user_id: null,
+        user_id: null, // Admin
         title: "มีการอัปโหลดสลิปใหม่",
-        message: `ผู้ใช้ห้อง ${payment.Stay.room_id} ได้อัปโหลดสลิป`,
+        message: `ผู้ใช้ห้อง ${payment.stay.room_id} ได้อัปโหลดสลิป`,
       });
 
       res.status(201).json({ message: "อัปโหลดสลิปสำเร็จ", slip });

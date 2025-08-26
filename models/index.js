@@ -11,7 +11,21 @@ const Expense = require('./expense');
 const BillType = require('./billtype');
 const Payment = require('./payment');
 const Income = require('./income');
+const PaymentSlip = require('./paymentSlip');
 const NotificationRepair = require('./notificationRepair');
+const Notification = require('./notification');
+
+Admin.hasMany(Notification, { foreignKey: 'user_id', as: 'notifications' });
+Notification.belongsTo(Admin, { foreignKey: 'user_id', as: 'admin' });
+
+Payment.hasMany(PaymentSlip, { foreignKey: 'payment_id', as: 'slips' });
+PaymentSlip.belongsTo(Payment, { foreignKey: 'payment_id', as: 'payment' });
+
+Stay.hasMany(PaymentSlip, { foreignKey: 'stay_id', as: 'slips' });
+PaymentSlip.belongsTo(Stay, { foreignKey: 'stay_id', as: 'stay' });
+
+User.hasMany(PaymentSlip, { foreignKey: 'user_id', as: 'slips' });
+PaymentSlip.belongsTo(User, { foreignKey: 'user_id', as: 'user' });
 
 // NotificationRepair associations
 Admin.hasMany(NotificationRepair, { foreignKey: 'admin_id', as: 'notificationRepair' });
@@ -65,4 +79,6 @@ module.exports = {
   Payment,
   Income,
   NotificationRepair,
+  Notification,
+  PaymentSlip,
 };
