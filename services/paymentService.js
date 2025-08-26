@@ -33,7 +33,7 @@ exports.createPayment = async ({ admin_id, stay_id, water_amount = 0, ele_amount
     other_payment_detail,
     payment_total,
     payment_date,
-    payment_status: '1',
+    payment_status: '1', // กำลังดำเนินการ
   });
 
   // ส่ง Notification แจ้ง user
@@ -53,8 +53,9 @@ exports.getAllPayments = async () => {
       'payment_id',
       'stay_id',
       [Sequelize.col('Admin.admin_name'), 'admin_name'],
-      [Sequelize.col('stay.User.user_name'), 'user_name'],
-      [Sequelize.col('stay.Room.room_num'), 'room_num'],
+      [Sequelize.col('Stay.User.user_id'), 'user_id'],
+      [Sequelize.col('Stay.User.user_name'), 'user_name'],
+      [Sequelize.col('Stay.Room.room_num'), 'room_num'],
       'water_amount',
       'water_price',
       'ele_amount',
@@ -65,7 +66,12 @@ exports.getAllPayments = async () => {
       'payment_date',
       'payment_status'
     ],
-    include: [ { model: Stay, attributes: [], include: [{ model: Room, attributes: [] }, { model: User, attributes: [] }] }, { model: Admin, attributes: [] } ] }); };
+    include: [
+      { model: Stay, attributes: [], include: [{ model: Room, attributes: [] }, { model: User, attributes: [] }] },
+      { model: Admin, attributes: [] }
+    ]
+  });
+};
 
 // ==================== GET PAYMENT BY ID ====================
 exports.getPaymentById = async (id) => {
@@ -73,8 +79,9 @@ exports.getPaymentById = async (id) => {
     attributes: [
       'payment_id',
       [Sequelize.col('Admin.admin_name'), 'admin_name'],
-      [Sequelize.col('stay.User.user_name'), 'user_name'],
-      [Sequelize.col('stay.Room.room_num'), 'room_num'],
+      [Sequelize.col('Stay.User.user_id'), 'user_id'],
+      [Sequelize.col('Stay.User.user_name'), 'user_name'],
+      [Sequelize.col('Stay.Room.room_num'), 'room_num'],
       'water_amount',
       'water_price',
       'ele_amount',
@@ -85,16 +92,21 @@ exports.getPaymentById = async (id) => {
       'payment_date',
       'payment_status'
     ],
-    include: [ 
-      { model: Stay, attributes: [], include: [{ model: Room, attributes: [] }, { model: User, attributes: [] }] }, { model: Admin, attributes: [] } ] }); 
-      if (!payment) handleError("ไม่พบข้อมูลการชำระ", 404); return payment; };
+    include: [
+      { model: Stay, attributes: [], include: [{ model: Room, attributes: [] }, { model: User, attributes: [] }] },
+      { model: Admin, attributes: [] }
+    ]
+  });
+  if (!payment) handleError("ไม่พบข้อมูลการชำระ", 404);
+  return payment;
+};
 
 // ==================== UPDATE PAYMENT ====================
 exports.updatePayment = async (id, data) => {
   const payment = await Payment.findByPk(id, { include: [{ model: Stay, include: [User, Room] }] });
   if (!payment) handleError("ไม่พบข้อมูลการชำระ", 404);
 
-  const stay = payment.stay;
+  const stay = payment.Stay;
   if (!stay || !stay.Room) handleError("ไม่พบข้อมูลห้องพัก", 404);
 
   // คำนวณราคาถ้าเปลี่ยนค่า
