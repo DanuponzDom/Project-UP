@@ -6,7 +6,7 @@ exports.getAllRepairs = async () => {
   const repairs = await Repair.findAll({
     include: [
       { model: Admin, attributes: ['admin_name'] },
-      { model: Stay, attributes: ['stay_id'], include: [{ model: Room, attributes: ['room_num'] }] },
+      { model: Stay, attributes: ['stay_id', 'user_id'], include: [{ model: Room, attributes: ['room_num'] }] },
       { model: Repairlist, attributes: ['repairlist_details', 'repairlist_price'] },
     ],
   });
@@ -29,7 +29,7 @@ exports.getRepairById = async (id) => {
   const r = await Repair.findByPk(id, {
     include: [
       { model: Admin, attributes: ['admin_name'] },
-      { model: Stay, attributes: ['stay_id'], include: [{ model: Room, attributes: ['room_num'] }] },
+      { model: Stay, attributes: ['stay_id', 'user_id'], include: [{ model: Room, attributes: ['room_num'] }] },
       { model: Repairlist, attributes: ['repairlist_details', 'repairlist_price'] },
     ],
   });
@@ -57,8 +57,8 @@ exports.getRepairsByUserId = async (userId) => {
       { 
         model: Stay,
         attributes: ['stay_id', 'user_id'],
+        where: { user_id: userId },
         include: [{ model: Room, attributes: ['room_num'] }],
-        where: { user_id: userId } // กรองเฉพาะ user นี้
       },
       { model: Repairlist, attributes: ['repairlist_details', 'repairlist_price'] },
     ],
