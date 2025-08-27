@@ -20,8 +20,12 @@ const Notification = require('./notification');
 // 3. Associations
 
 // Notification
-Admin.hasMany(Notification, { foreignKey: 'user_id', as: 'notifications' });
-Notification.belongsTo(Admin, { foreignKey: 'user_id', as: 'admin' });
+User.hasMany(Notification, { foreignKey: 'user_id', as: 'notifications' });
+Notification.belongsTo(User, { foreignKey: 'user_id', as: 'user' });
+
+// Notification สำหรับ admin (ถ้าต้องการส่ง notification ให้ admin)
+//Admin.hasMany(Notification, { foreignKey: 'admin_id', as: 'notifications' });
+//Notification.belongsTo(Admin, { foreignKey: 'admin_id', as: 'admin' });
 
 // NotificationRepair
 Admin.hasMany(NotificationRepair, { foreignKey: 'admin_id', as: 'notificationRepair' });
