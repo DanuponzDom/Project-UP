@@ -19,6 +19,16 @@ exports.getStayById = async (req, res) => {
   }
 };
 
+exports.getStayByUserId = async (req, res) => {
+  try {
+    const stay = await stayService.getStayByUserId(req.params.userId);
+    if (!stay) return res.status(404).json({ message: 'ไม่พบ stay ของผู้ใช้' });
+    res.json(stay);
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+};
+
 exports.createStay = async (req, res) => {
   try {
     const newStay = await stayService.createStay(req.body);

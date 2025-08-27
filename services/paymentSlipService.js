@@ -1,4 +1,4 @@
-const { PaymentSlip, Payment, Stay, Notification } = require('../models');
+const { PaymentSlip, Payment, Stay, Notification, User, Room } = require('../models');
 
 // อัปโหลด slip (เพิ่ม Notification ไปที่ admin)
 exports.uploadSlip = async ({ payment_id, slip_url }) => {
@@ -13,6 +13,7 @@ exports.uploadSlip = async ({ payment_id, slip_url }) => {
 });
 
 if (!payment) throw new Error('ไม่พบ payment_id');
+if (!payment.Stay) throw new Error('ไม่พบข้อมูล Stay สำหรับ payment นี้');
 
   // สร้าง PaymentSlip
   const slip = await PaymentSlip.create({
@@ -26,7 +27,7 @@ if (!payment) throw new Error('ไม่พบ payment_id');
   await Notification.create({
     user_id: null, // admin เป็นผู้รับ
     title: 'มีการอัปโหลดสลิปใหม่',
-    message: `ผู้ใช้ห้อง ${payment.Stay.room_id} ได้อัปโหลดสลิปการชำระเงิน`,
+    message: `ผู้ใช้ห้อง ${payment.Stay.Room.room_num} ได้อัปโหลดสลิปการชำระเงิน`,
   });
 
   return slip;

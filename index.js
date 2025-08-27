@@ -35,7 +35,7 @@ app.use(cors());
 app.use(express.json());
 
 // เปิดให้เข้าถึงโฟลเดอร์ uploads/slips ได้
-app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
+app.use('/uploads/slips', express.static(path.join(__dirname, 'uploads/slips')));
 
 // Routes
 app.use('/users', userRoute);

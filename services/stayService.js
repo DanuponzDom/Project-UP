@@ -40,6 +40,21 @@ exports.getStayById = async (id) => {
   };
 };
 
+//GET USER ID
+exports.getStayByUserId = async (userId) => {
+  const stay = await Stay.findOne({
+    where: { user_id: userId },
+    include: [{ model: Room, attributes: ['room_num'] }]
+  });
+
+  if (!stay) return null;
+
+  return {
+    stay_id: stay.stay_id,
+    room_num: stay.Room?.room_num ?? null
+  };
+};
+
 // CREATE STAY
 exports.createStay = async (stayData) => {
   const created = await Stay.create(stayData);
