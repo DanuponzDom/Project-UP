@@ -104,11 +104,11 @@ exports.updateRepair = async (id, updateData) => {
   const repair = await Repair.findByPk(id);
   if (!repair) return null;
 
-  // ตรวจสอบว่าเปลี่ยนสถานะเป็น "ซ่อมแล้ว"
+  // ตรวจสอบว่าเปลี่ยนสถานะเป็น "completed"
   const prevStatus = repair.repair_status;
   await repair.update(updateData);
 
-  if (prevStatus === 'รอซ่อม' && updateData.repair_status === 'ซ่อมแล้ว') {
+  if (prevStatus === 'pending' && updateData.repair_status === 'completed') {
     // ดึงข้อมูล stay + room
     const stay = await Stay.findByPk(repair.stay_id, { include: [{ model: Room }] });
     const roomNum = stay?.Room?.room_num || 'ไม่ระบุห้อง';

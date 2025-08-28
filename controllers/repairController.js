@@ -50,14 +50,14 @@ exports.create = async (req, res) => {
   }
 };
 
-// แก้ไขข้อมูล และแจ้ง User หากสถานะเปลี่ยนเป็น 'ซ่อมแล้ว'
+// แก้ไขข้อมูล และแจ้ง User หากสถานะเปลี่ยนเป็น 'completed'
 exports.update = async (req, res) => {
   try {
     const repair = await repairService.updateRepair(req.params.id, req.body);
     if (!repair) return res.status(404).json({ error: 'ไม่พบข้อมูล' });
 
     let message = 'แก้ไขรายการซ่อมสำเร็จ';
-    if (req.body.repair_status === 'ซ่อมแล้ว') {
+    if (req.body.repair_status === 'completed') {
       message += ' และส่งแจ้งเตือนไปยังผู้ใช้งาน';
     }
 

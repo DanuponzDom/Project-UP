@@ -26,7 +26,7 @@ const Repair = sequelize.define('Repair', {
   repair_status: {
     type: DataTypes.STRING,
     allowNull: false,
-    defaultValue: 'รอซ่อม',
+    defaultValue: 'pending',
   },
 }, {
   tableName: 'repairs',
