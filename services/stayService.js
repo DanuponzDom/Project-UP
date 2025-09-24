@@ -5,7 +5,7 @@ exports.getAllStays = async () => {
   const stays = await Stay.findAll({
     include: [
       { model: User, attributes: ['user_name'] },
-      { model: Room, attributes: ['room_num'] }
+      { model: Room, attributes: ['room_num', 'room_price'] }
     ],
     order: [['stay_id', 'ASC']],
   });
@@ -17,6 +17,7 @@ exports.getAllStays = async () => {
     stay_dateout: stay.stay_dateout,
     user_name: stay.User?.user_name || null,
     room_num: stay.Room?.room_num || null,
+    room_price: stay.Room?.room_price ?? 0,
   }));
 };
 
@@ -25,7 +26,7 @@ exports.getStayById = async (id) => {
   const stay = await Stay.findByPk(id, {
     include: [
       { model: User, attributes: ['user_name'] },
-      { model: Room, attributes: ['room_num'] }
+      { model: Room, attributes: ['room_num', 'room_price'] }
     ],
   });
   if (!stay) return null;
@@ -37,6 +38,7 @@ exports.getStayById = async (id) => {
     stay_dateout: stay.stay_dateout,
     user_name: stay.User?.user_name || null,
     room_num: stay.Room?.room_num || null,
+    room_price: stay.Room?.room_price ?? 0,
   };
 };
 
@@ -44,14 +46,15 @@ exports.getStayById = async (id) => {
 exports.getStayByUserId = async (userId) => {
   const stay = await Stay.findOne({
     where: { user_id: userId },
-    include: [{ model: Room, attributes: ['room_num'] }]
+    include: [{ model: Room, attributes: ['room_num', 'room_price'] }]
   });
 
   if (!stay) return null;
 
   return {
     stay_id: stay.stay_id,
-    room_num: stay.Room?.room_num ?? null
+    room_num: stay.Room?.room_num ?? null,
+    room_price: stay.Room?.room_price ?? 0,
   };
 };
 
@@ -77,6 +80,7 @@ exports.createStay = async (stayData) => {
     stay_dateout: created.stay_dateout,
     user_name: user?.user_name || null,
     room_num: room?.room_num || null,
+    room_price: room?.room_price ?? 0,
   };
 };
 
@@ -114,6 +118,7 @@ exports.updateStay = async (id, updateData) => {
     stay_dateout: stay.stay_dateout,
     user_name: user?.user_name || null,
     room_num: room?.room_num || null,
+    room_price: room?.room_price ?? 0,
   };
 };
 
